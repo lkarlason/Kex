@@ -299,6 +299,10 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     p2 = 0.999
 
     while t < iterations:
+        # generate  loss
+        z, a = feedforward(weights, biases, x) 
+        loss_list.append(loss_function(y, a[-1]))
+
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
         grad_W, grad_b = gradient(a, d, N_layers, batch_size) # generate gradient
@@ -315,9 +319,6 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         t +=1
         n +=1
         if n == N_batches: 
-            # generate training loss
-            z, a = feedforward(weights, biases, x) 
-            loss_list.append(loss_function(y, a[-1]))
             n = 0 # looping through all batches
             epoch +=1 # next epoch
             print("epoch = ", epoch, "/",iterations/N_batches)
