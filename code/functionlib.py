@@ -292,7 +292,6 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Stocastic gradient decent with ADAM"""
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
-    time_list = []
     t = 1 # iteration counter
     n = 0 # batch counter
     epoch = 0
@@ -306,12 +305,17 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     p1 = 0.9
     p2 = 0.999
 
+    start = time.time()
+    convergence_time = 0
+
     while t < iterations:
         # generate  loss and time
         z, a = feedforward(weights, biases, x) 
         loss_list.append(loss_function(y, a[-1]))
-        # start time count
-        start = time.time()
+        if loss_list[-1] < 0.2:
+            end = time.time()
+            convergence_time = end-start
+
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -326,17 +330,16 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
 
         weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-8))*learn_rate
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
-        # measure time and next batch
-        end = time.time()
-        time_list.append(end-start)
+
         t +=1
         n +=1
         if n == N_batches: 
             n = 0 # looping through all batches
             epoch +=1 # next epoch
             print("epoch = ", epoch, "/",iterations/N_batches)
-
-    return weights, biases, loss_list, time_list
+    if convergence_time == 0:
+        convergence_time = time.time()-start
+    return weights, biases, loss_list, convergence_time
 
 def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Conjugate gradient decent """
