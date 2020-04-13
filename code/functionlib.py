@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 from scipy.special import gamma
 import math
-import timeit
+import time
 
 def circle_classification(x):
     """ Generates labels for points inside and outside a circle. """
@@ -269,7 +269,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         z, a = feedforward(weights, biases, x) 
         loss_list.append(loss_function(y, a[-1]))
         # start time measure
-        start = timeit.timeit()
+        start = time.time()
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -279,7 +279,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         weight_vector -= learn_rate * gradient_vector
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
         # measure time and next batch
-        end = timeit.timeit()
+        end = time.time()
         time_list.append(end-start)
         t += 1
         n += 1
@@ -311,7 +311,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         z, a = feedforward(weights, biases, x) 
         loss_list.append(loss_function(y, a[-1]))
         # start time count
-        start = timeit.timeit()
+        start = time.time()
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -327,7 +327,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-8))*learn_rate
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
         # measure time and next batch
-        end = timeit.timeit()
+        end = time.time()
         time_list.append(end-start)
         t +=1
         n +=1
