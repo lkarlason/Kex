@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 from scipy.special import gamma
 import math
+import timeit
 
 def circle_classification(x):
     """ Generates labels for points inside and outside a circle. """
@@ -254,6 +255,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Stocastic gradient decent """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
+    time_list = []
     t = 1 # iteration counter
     n = 0 # batch counter
 
@@ -263,6 +265,12 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     gradient_vector = param_vector(x, layer_width, 0, random_seed)
 
     while t < iterations:
+        # generate training loss
+        z, a = feedforward(weights, biases, x) 
+        loss_list.append(loss_function(y, a[-1]))
+        # start time measure
+        start = timeit.timeit()
+        # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
         grad_W, grad_b = gradient(a, d, N_layers,batch_size) # generate gradient
@@ -270,21 +278,21 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         # gradient decent
         weight_vector -= learn_rate * gradient_vector
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
-        # next batch
-        n +=1
+        # measure time and next batch
+        end = timeit.timeit()
+        time_list.append(end-start)
+        t += 1
+        n += 1
         if n == N_batches: 
-            # generate training loss
-            z, a = feedforward(weights, biases, x) 
-            loss_list.append(loss_function(y, a[-1]))
             n = 0 # looping through all batches
-            t +=1 # next epoch
             print("t = ", t, "/",iterations)
-    return weights, biases, loss_list
+    return weights, biases, loss_list, time_list
 
 def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Stocastic gradient decent with ADAM"""
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
+    time_list = []
     t = 1 # iteration counter
     n = 0 # batch counter
     epoch = 0
@@ -299,10 +307,12 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     p2 = 0.999
 
     while t < iterations:
-        # generate  loss
+        # generate  loss and time
         z, a = feedforward(weights, biases, x) 
         loss_list.append(loss_function(y, a[-1]))
-
+        # start time count
+        start = timeit.timeit()
+        # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
         grad_W, grad_b = gradient(a, d, N_layers, batch_size) # generate gradient
@@ -316,6 +326,9 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
 
         weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-8))*learn_rate
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
+        # measure time and next batch
+        end = timeit.timeit()
+        time_list.append(end-start)
         t +=1
         n +=1
         if n == N_batches: 
@@ -323,7 +336,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
             epoch +=1 # next epoch
             print("epoch = ", epoch, "/",iterations/N_batches)
 
-    return weights, biases, loss_list
+    return weights, biases, loss_list, time_list
 
 def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Conjugate gradient decent """
