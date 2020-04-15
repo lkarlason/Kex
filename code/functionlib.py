@@ -128,6 +128,15 @@ def plot_loss(loss_list):
     plt.plot(loss_list)
     plt.show()
 
+def plot_loss_time(loss_list, time_list):
+    """ Plot loss over iterations """
+    plt.figure()
+    plt.title("Loss function")
+    plt.xlabel('Seconds')
+    plt.ylabel('Loss')
+    plt.plot(time_list, loss_list)
+    plt.show()
+
 def param_vector(x, layer_width, param_size, random_seed):
     parameters = 0
     for i in range(len(layer_width)):
@@ -256,6 +265,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
     time_list = []
+    gradient_list = []
     t = 1 # iteration counter
     n = 0 # batch counter
 
@@ -264,12 +274,8 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
     gradient_vector = param_vector(x, layer_width, 0, random_seed)
 
+    start_time = time.time()
     while t < iterations:
-        # generate training loss
-        z, a = feedforward(weights, biases, x) 
-        loss_list.append(loss_function(y, a[-1]))
-        # start time measure
-        start = time.time()
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -279,11 +285,13 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         weight_vector -= learn_rate * gradient_vector
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
         # measure time and next batch
-        end = time.time()
-        time_list.append(end-start)
         t += 1
         n += 1
         if n == N_batches: 
+            gradient_list.append(linalg.norm(gradient_vector))
+            z, a = feedforward(weights, biases, x) 
+            loss_list.append(loss_function(y, a[-1]))
+            time_list.append(time.time()-start_time)
             n = 0 # looping through all batches
             print("t = ", t, "/",iterations)
     return weights, biases, loss_list, time_list
@@ -292,6 +300,9 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Stocastic gradient decent with ADAM"""
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
+    time_list = []
+    gradient_list = []
+    batch_gradient_list = []
     t = 1 # iteration counter
     n = 0 # batch counter
     epoch = 0
@@ -305,46 +316,48 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     p1 = 0.9
     p2 = 0.999
 
-    start = time.time()
+    start_time = time.time()
     convergence_time = 0
 
     while t < iterations:
-        # generate  loss and time
-        z, a = feedforward(weights, biases, x) 
-        loss_list.append(loss_function(y, a[-1]))
+        """
         if loss_list[-1] < 0.2:
             end = time.time()
-            convergence_time = end-start
-
+            convergence_time = end-start_time
+        """
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
         grad_W, grad_b = gradient(a, d, N_layers, batch_size) # generate gradient
         gradient_vector = matrix_to_vector(gradient_vector, grad_W, grad_b)
-
         # ADAM
         s = p1*s + (1-p1)*gradient_vector
         r = p2*r + (1-p2)*gradient_vector**2
         s_hat = s/(1-p1**t)
         r_hat = r/(1-p2**t)
-
-        weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-8))*learn_rate
+        weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-10))*learn_rate
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
-
+        # measure time and next batch
         t +=1
         n +=1
+        batch_gradient_list.append(linalg.norm(gradient_vector))
         if n == N_batches: 
+            z, a = feedforward(weights, biases, x) 
+            loss_list.append(loss_function(y, a[-1]))
+            time_list.append(time.time()-start_time)
+            gradient_list.append(np.mean(batch_gradient_list))
             n = 0 # looping through all batches
             epoch +=1 # next epoch
             print("epoch = ", epoch, "/",iterations/N_batches)
     if convergence_time == 0:
-        convergence_time = time.time()-start
-    return weights, biases, loss_list, convergence_time
+        convergence_time = time.time()-start_time
+    return weights, biases, loss_list, time_list, gradient_list
 
 def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Conjugate gradient decent """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
+    time_list = []
     t = 0 # iteration counter
     n = 0 # batch counter
     epoch = 0
@@ -353,7 +366,7 @@ def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
     weight_vector = param_vector(x, layer_width, 0.01, random_seed)
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
-
+    start_time = time.time()
     while t < iterations:
         rho = param_vector(x, layer_width, 0, random_seed)
         gradient_vector = param_vector(x, layer_width, 0, random_seed)
@@ -378,6 +391,7 @@ def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
             # Update parameters
             weight_vector += rho*step[0]
             weights, biases = vector_to_matrix(x, layer_width, weight_vector)
+            time_list.append(time.time()-start_time)
 
         n +=1
         if n == N_batches: 
@@ -385,7 +399,7 @@ def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
             n = 0 # looping through all batches
             print("t = ", t, "/",iterations)
 
-    return weights, biases, loss_list
+    return weights, biases, loss_list, time_list
 
 def objective(step, weight, rho, layer_width, x, y):  
     weight_vector = weight.copy()
@@ -404,6 +418,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     """ Limited-memory Broyden–Fletcher–Goldfarb–Shanno """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
+    time_list = []
     t = 0 # iteration counter
     n = 0 # batch counter
     epoch = 0 # epoch counter
@@ -418,6 +433,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     Y = [] #y# gradient step sizes
     S = [learn_rate*weight_vector.copy()] #s# weights step sizes
     ro = []
+    start_time = time.time()
     while t < iterations:  
         
         for k in range(1,reps+1):
@@ -453,10 +469,11 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
             weights, biases = vector_to_matrix(x, layer_width, weight_vector)
             S = update_list(S, -q*learn_rate, m)
             #print("S = ", linalg.norm(S[0]))
+            time_list.append(time.time()-start_time)
 
         n +=1
         if n == N_batches: 
             n = 0 # return to batch 1
             print("t = ", t, "/",iterations)
     
-    return weights, biases, loss_list
+    return weights, biases, loss_list, time_list
