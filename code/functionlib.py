@@ -119,23 +119,21 @@ def calculte_loss(weights, biases):
             loss +=1
     return loss/N
 
-def plot_loss(loss_list):
+def plot_loss_epoch(loss_list):
     """ Plot loss over iterations """
-    plt.figure()
     plt.title("Loss function")
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.plot(loss_list)
-    plt.show()
 
-def plot_loss_time(loss_list, time_list):
+def plot_loss_time(loss_list, time_list, name):
     """ Plot loss over iterations """
-    plt.figure()
     plt.title("Loss function")
     plt.xlabel('Seconds')
     plt.ylabel('Loss')
+    plt.plot(time_list, loss_list, label= name)
     plt.plot(time_list, loss_list)
-    plt.show()
+
 
 def param_vector(x, layer_width, param_size, random_seed):
     parameters = 0
@@ -260,7 +258,7 @@ def loss_function(y,a):
     """ Returns the value of the loss function. """
     return -np.sum(y.T*np.log(a)+(1-y.T)*np.log(1-a))/y.size
 
-def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
+def SGD(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
     """ Stocastic gradient decent """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
@@ -272,7 +270,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     n = 0 # batch counter
 
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
-    weight_vector = param_vector(x, layer_width, 0.1, random_seed)
+    weight_vector = param_vector(x, layer_width, initial, random_seed)
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
     gradient_vector = param_vector(x, layer_width, 0, random_seed)
 
@@ -299,9 +297,9 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
             epoch += 1
             n = 0 # return to batch 1
             print("epoch = ", epoch, "/",iterations)
-    return weights, biases, loss_list, time_list
+    return weights, biases, loss_list, time_list, gradient_list
 
-def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
+def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
     """ Stocastic gradient decent with ADAM"""
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
@@ -313,7 +311,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     epoch = 0
 
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
-    weight_vector = param_vector(x, layer_width, 0.01, random_seed)
+    weight_vector = param_vector(x, layer_width, initial, random_seed)
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
     gradient_vector = param_vector(x, layer_width, 0, random_seed)
     s = param_vector(x, layer_width, 0, random_seed)    
@@ -359,7 +357,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
         convergence_time = time.time()-start_time
     return weights, biases, loss_list, time_list, gradient_list
 
-def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
+def CG(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
     """ Conjugate gradient decent """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
@@ -372,7 +370,7 @@ def CG(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     reps = 4
     
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
-    weight_vector = param_vector(x, layer_width, 0.01, random_seed)
+    weight_vector = param_vector(x, layer_width, initial, random_seed)
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
     start_time = time.time()
     while epoch < iterations:
@@ -424,7 +422,7 @@ def update_list(history, ele, memory):
                 history.pop()
     return history
 
-def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
+def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
     """ Limited-memory Broyden–Fletcher–Goldfarb–Shanno """
     N_layers = len(layer_width)
     loss_list = [] # list for plotting loss over iterations
@@ -438,7 +436,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, random_seed):
     m = 20 # number of updates kept
     
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
-    weight_vector = param_vector(x, layer_width, 0.1, random_seed) # create weights
+    weight_vector = param_vector(x, layer_width, initial, random_seed) # create weights
     weights, biases = vector_to_matrix(x, layer_width, weight_vector)
     gradient_vector = param_vector(x, layer_width, 0, random_seed) # create gradients
 
