@@ -132,7 +132,6 @@ def plot_loss_time(loss_list, time_list, name):
     plt.xlabel('Seconds')
     plt.ylabel('Loss')
     plt.plot(time_list, loss_list, label= name)
-    plt.plot(time_list, loss_list)
 
 
 def param_vector(x, layer_width, param_size, random_seed):
@@ -470,12 +469,13 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
             weight_vector -= q*learn_rate
             weights, biases = vector_to_matrix(x, layer_width, weight_vector)
             S = update_list(S, -q*learn_rate, m)
-            batch_gradient_list.append(linalg.norm(gradient_vector)**2)
+            batch_gradient_list.append(linalg.norm(gradient_vector.copy())**2)
 
         n +=1
         if n == N_batches: 
             z, a = feedforward(weights, biases, x) 
             loss_list.append(loss_function(y, a[-1]))
+            print(loss_list[-1])
             time_list.append(time.time()-start_time)
             gradient_list.append(np.mean(batch_gradient_list))
             batch_gradient_list = []
