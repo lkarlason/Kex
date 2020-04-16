@@ -255,7 +255,7 @@ def gradient(a,d,l,m):
 
 def loss_function(y,a):
     """ Returns the value of the loss function. """
-    return -np.sum(y.T*np.log(a)+(1-y.T)*np.log(1-a))/y.size
+    return -np.sum(y.T*np.log(a+10**-10)+(1-y.T)*np.log(1-a+10**-10))/y.size
 
 def SGD(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
     """ Stocastic gradient decent """
@@ -431,7 +431,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     t = 0 # iteration counter
     n = 0 # batch counter
     epoch = 0 # epoch counter
-    reps = 20 
+    reps = 1 
     m = 20 # number of updates kept
     
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
@@ -440,12 +440,16 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     gradient_vector = param_vector(x, layer_width, 0, random_seed) # create gradients
 
     start_time = time.time()
+    Y = [] #y# gradient step sizes
+    S = [learn_rate*weight_vector.copy()] #s# weights step sizes
+    ro = []
     while epoch < iterations:  
-        Y = [] #y# gradient step sizes
-        S = [learn_rate*weight_vector.copy()] #s# weights step sizes
-        ro = []
+        
         for k in range(1,reps+1):
             t +=1
+            z, a = feedforward(weights, biases, x) 
+            loss_list.append(loss_function(y, a[-1]))
+            print(loss_list[-1])
             # calculate gradient
             z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
             d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -454,14 +458,14 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
             gradient_vector = matrix_to_vector(gradient_vector, grad_W, grad_b)
             #L-BFGS
             Y = update_list(Y, gradient_vector-old_grad, m)
-            ro = update_list(ro, 1/(np.dot(S[0], Y[0])+10**-15), m)
+            ro = update_list(ro, 1/(np.dot(S[0], Y[0])+10**-10), m)
             q = gradient_vector.copy()
             alpha = np.zeros(len(S))
             beta = np.zeros(len(S))
             for i in range(len(S)):
                 alpha[i] = np.dot(S[i], q)*ro[i]
                 q -= alpha[i]*Y[i]
-            gamma = np.dot(S[0],Y[0])/(np.dot(Y[0],Y[0])+10**-15)
+            gamma = np.dot(S[0],Y[0])/(np.dot(Y[0],Y[0])+10**-10)
             q = gamma*q
             for i in range(len(S)-1, -1, -1):
                 beta[i] = np.dot(Y[i], q)*ro[i]
