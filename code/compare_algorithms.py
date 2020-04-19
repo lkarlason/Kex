@@ -37,12 +37,3 @@ else:
         
     plt.legend()
     plt.show()
-
-    """
-    
-def plot_loss_epoch(loss_list, epoch, name):
-    """ Plot loss over iterations """
-    plt.title("Loss function")
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.plot([x for x in range(0, len(loss_list)*epoch, epoch)],loss_list, label= name)

@@ -106,7 +106,7 @@ def plot_results(weights, biases):
     plot_circles()
     plt.show
 
-def calculte_loss(weights, biases):
+def calculate_loss(weights, biases):
     feature =  weights[0].shape[1]
     N = 5000*feature
     x = np.random.uniform(0,1, size = (feature, N))
@@ -132,7 +132,6 @@ def plot_loss_epoch(loss_list, epoch, name):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.plot([x for x in range(0, len(loss_list)*epoch, epoch)],loss_list, label= name)
-
 
 def param_vector(x, layer_width, param_size, random_seed):
     parameters = 0
