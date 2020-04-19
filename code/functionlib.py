@@ -126,12 +126,12 @@ def plot_loss_epoch(loss_list):
     plt.ylabel('Loss')
     plt.plot(loss_list)
 
-def plot_loss_time(loss_list, time_list, name):
+def plot_loss_epoch(loss_list, epoch, name):
     """ Plot loss over iterations """
     plt.title("Loss function")
-    plt.xlabel('Seconds')
+    plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(time_list, loss_list, label= name)
+    plt.plot([x for x in range(0, len(loss_list)*epoch, epoch)],loss_list, label= name)
 
 
 def param_vector(x, layer_width, param_size, random_seed):
