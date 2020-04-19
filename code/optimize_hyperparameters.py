@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import functionlib as flib
 """ Hyperparameters """
 """ SGD, ADAM, CG, L_BFGS"""
-iterations = 6000
+iterations = 3000
 learn_rate = 0.1
 features = 2 # input dimension
 batch_size = 512
@@ -18,7 +18,7 @@ x = np.random.uniform(0,1,size=(features, N_train)) # each columns is one observ
 y = flib.circles_classification(x)
 """ Plot Result """
 # parameter to optimize
-learn_rate = [1, 0.8, 0.6, 0.5]
+learn_rate = [1, 0.9, 0.8, 0.7]
 plt.figure()
 func = flib.SGD
 loss_value = [None]*len(learn_rate)

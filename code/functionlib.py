@@ -24,6 +24,7 @@ def circle_classification(x):
     return y
 
 def circles_classification(x):
+    """ Generates labels for points inside and outside the circles. """
     N = x.shape[1]
     features = x.shape[0]
     circles = 2**features
@@ -43,6 +44,7 @@ def circles_classification(x):
     return y
 
 def N_radius(features, circles):
+    """ Calculate the radius in n dimensional space """
     rad = (gamma([features/2+1])/(2*circles*np.power(np.pi,(features/2))))**(1/features)
     return rad[0]
 
@@ -72,7 +74,7 @@ def plot_circle():
     plt.plot(x_c,y_c,'k')
 
 def plot_circles():
-    """ Plots the circle. """
+    """ Plots the circles. """
     c = 0.25
     r = 0.19947
     theta = np.linspace(0,np.pi*2)
