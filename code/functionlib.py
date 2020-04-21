@@ -121,15 +121,15 @@ def calculate_loss(weights, biases):
             loss +=1
     return loss/N
 
-def plot_loss_epoch(loss_list):
+def plot_loss_time(loss_list, time_list, name):
     """ Plot loss over iterations """
     plt.title("Loss function")
-    plt.xlabel('Epoch')
+    plt.xlabel('Time')
     plt.ylabel('Loss')
-    plt.plot(loss_list)
+    plt.plot(time_list, loss_list, label= name)
 
 def plot_loss_epoch(loss_list, epoch, name):
-    """ Plot loss over iterations """
+    """ Plot loss over epoch """
     plt.title("Loss function")
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
@@ -266,8 +266,8 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_s
     gradient_list = []
     batch_gradient_list = []
     t = 0 # iteration counter
-    epoch = 0
     n = 0 # batch counter
+    epoch = 0
 
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
     weight_vector = param_vector(x, layer_width, initial, random_seed)
@@ -318,20 +318,15 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_
     r = param_vector(x, layer_width, 0, random_seed)
     p1 = 0.9
     p2 = 0.999
+    print("N batches = ",N_batches)
 
     start_time = time.time()
-    convergence_time = 0
     while epoch < iterations:
-        """
-        if loss_list[-1] < 0.2:
-            end = time.time()
-            convergence_time = end-start_time
-        """
         t +=1
         # calculate gradient
         z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
         d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
-        grad_W, grad_b = gradient(a, d, N_layers, batch_size) # generate gradient
+        grad_W, grad_b = gradient(a, d, N_layers,batch_size) # generate gradient
         gradient_vector = matrix_to_vector(gradient_vector, grad_W, grad_b)
         # ADAM
         s = p1*s + (1-p1)*gradient_vector
@@ -341,7 +336,7 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_
         weight_vector -= s_hat/(np.sqrt(r_hat)+10**(-10))*learn_rate
         weights, biases = vector_to_matrix(x, layer_width, weight_vector)
         # measure loss
-        batch_gradient_list.append(linalg.norm(gradient_vector)**2)
+        batch_gradient_list.append(linalg.norm(gradient_vector.copy())**2)
         n +=1
         if n == N_batches: 
             z, a = feedforward(weights, biases, x) 
@@ -352,9 +347,6 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_
             epoch += 1
             n = 0 # return to batch 1
             print("epoch = ", epoch, "/",iterations)
-
-    if convergence_time == 0:
-        convergence_time = time.time()-start_time
     return weights, biases, loss_list, time_list, gradient_list
 
 def CG(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
@@ -432,7 +424,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     t = 0 # iteration counter
     n = 0 # batch counter
     epoch = 0 # epoch counter
-    reps = 1 
+    reps = 1
     m = 20 # number of updates kept
     
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
@@ -445,12 +437,8 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     S = [learn_rate*weight_vector.copy()] #s# weights step sizes
     ro = []
     while epoch < iterations:  
-        
         for k in range(1,reps+1):
             t +=1
-            z, a = feedforward(weights, biases, x) 
-            loss_list.append(loss_function(y, a[-1]))
-            print(loss_list[-1])
             # calculate gradient
             z, a = feedforward(weights, biases, x_batch[n]) # node parameters for batch n
             d = backpropagate(weights, z, a, y_batch[n], N_layers) # deltas in network
@@ -475,7 +463,6 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
             weights, biases = vector_to_matrix(x, layer_width, weight_vector)
             S = update_list(S, -q*learn_rate, m)
             batch_gradient_list.append(linalg.norm(gradient_vector.copy())**2)
-
         n +=1
         if n == N_batches: 
             z, a = feedforward(weights, biases, x) 

@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import functionlib as flib
 """ Hyperparameters """
 """ SGD, ADAM, CG, L_BFGS"""
-iterations = [4000, 2000, 600, 500]
-learn_rate = 0.1
-features = 2 # input dimension
-batch_size = 512
+iterations = [700, 700, 600, 500]
+learn_rate = [0.9, 0.07, 0.1, 0.05]
+batch_size = [64, 128, ]
 N_train = 2048 # number of training observations
+features = 2 # input dimension
 layer_width = [20, 1] # width of layers
 N_layers = len(layer_width) # number of hidden layers
 random_seed = 1337
