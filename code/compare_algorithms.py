@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import functionlib as flib
 """ Hyperparameters """
 """ SGD, ADAM, CG, L_BFGS"""
-iterations = [700, 700, 700, 700]
+iterations = [1000, 1000, 1000, 1000]
 learn_rate = [0.9, 0.07, 0.1, 0.05]
 N_train = 2048 # number of training observations
 batch_size = [64, 128, 256, N_train]
@@ -11,7 +11,7 @@ features = 2 # input dimension
 layer_width = [20, 1] # width of layers
 N_layers = len(layer_width) # number of hidden layers
 N_seeds = 10
-random_seed = 1337*10
+random_seed = 1337
 initial = 1
 """ Generate data """
 np.random.seed(random_seed)
@@ -28,13 +28,21 @@ for i in range(4):
     print("method ",i)
     loss_mean = np.zeros((N_seeds, iterations[i]//reps[i]))
     time_mean = np.zeros((N_seeds, iterations[i]//reps[i]))
-    for j in range(N_seeds):
+    j = 0
+    q = 0
+    while j < N_seeds:
         print("sample ",j)
-        weights, biases, loss_mean[j,:], time_mean[j,:], gradient_list = func[i](x, y, layer_width, batch_size[i], learn_rate[i], iterations[i], initial, random_seed*(j+1))
+        weights, biases, loss_mean[j,:], time_mean[j,:], gradient_list = func[i](x, y, layer_width, batch_size[i], learn_rate[i], iterations[i], initial, random_seed*(j+1)+q)
+        if flib.calculate_loss(weights, biases) < 0.3:
+            j+=1
+        else:
+            q+=1
+            print("q = ",q)
 
     loss_value[i]= flib.calculate_loss(weights, biases)
     #flib.plot_loss_time(np.mean(loss_mean, axis=0), np.mean(time_mean, axis=0), name[i])
     flib.plot_loss_epoch(np.mean(loss_mean, axis=0), reps[i], name[i])
     
+print("q = ",q)
 plt.legend()
 plt.show()

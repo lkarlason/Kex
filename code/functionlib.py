@@ -297,7 +297,7 @@ def SGD(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_s
             epoch += 1
             n = 0 # return to batch 1
             #print("epoch = ", epoch, "/",iterations)
-            
+
     return weights, biases, loss_list, time_list, gradient_list
 
 def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_seed):
@@ -319,7 +319,6 @@ def ADAM(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_
     r = param_vector(x, layer_width, 0, random_seed)
     p1 = 0.9
     p2 = 0.999
-    print("N batches = ",N_batches)
 
     start_time = time.time()
     while epoch < iterations:
