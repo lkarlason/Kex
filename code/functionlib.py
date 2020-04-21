@@ -424,7 +424,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     t = 0 # iteration counter
     n = 0 # batch counter
     epoch = 0 # epoch counter
-    reps = 1
+    reps = 20
     m = 20 # number of updates kept
     
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size) # creates batches
@@ -436,7 +436,13 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     Y = [] #y# gradient step sizes
     S = [learn_rate*weight_vector.copy()] #s# weights step sizes
     ro = []
+    
     while epoch < iterations:  
+        if N_batches > 1:
+            Y = [] #y# gradient step sizes
+            S = [learn_rate*weight_vector.copy()] #s# weights step sizes
+            ro = []
+            
         for k in range(1,reps+1):
             t +=1
             # calculate gradient
