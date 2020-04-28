@@ -94,19 +94,17 @@ def plot_circles():
 def plot_results(weights, biases):
     """ Only works if there are two features"""
     N = 10000
-    if weights[0].shape[1] != 2: # if feature dim isn't 2
-        return
-    r = 0.39894
+    #if weights[0].shape[1] != 2: # if feature dim isn't 2
+    #    return
     x = np.random.uniform(0,1, size = (2,N))
     z, a = feedforward(weights, biases, x)
-    activation = a[-1][0]
+    acti = a[-1][0]
     plt.ylim(0, 1)
     plt.xlim(0, 1)
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.plot(x[0,activation < 0.5],x[1,activation < 0.5],'ro')
-    plt.plot(x[0,activation >= 0.5],x[1,activation >= 0.5],'bo')
+    plt.plot(x[0,acti < 0.5],x[1,acti < 0.5],'ro')
+    plt.plot(x[0,acti >= 0.5],x[1,acti >= 0.5],'bo')
     plot_circles()
-    plt.show
 
 def calculate_loss(weights, biases):
     feature =  weights[0].shape[1]
@@ -222,7 +220,7 @@ def feedforward(W,b,a_0):
         if(i == len(W)-1): 
             a[i+1] = sigmoid(z[i])
         else:
-            a[i+1] = np.tanh(z[i]) # rectifier(z[i])
+            a[i+1] = np.tanh(z[i]) #rectifier(z[i])
     return z, a
 
 def delta_out(a,y,z):
@@ -231,7 +229,7 @@ def delta_out(a,y,z):
 
 def delta_n(W,d,z,l):
     """ Returns the error in the nth layer. """
-    return np.matmul(W.T,d)*tanh_prime(z) #rectifier_prime(z) 
+    return np.matmul(W.T,d)*tanh_prime(z) #rectifier_prime(z)
     
 def backpropagate(w,z,a,y,l):
     """ Returns an array of the errors in all layers. """
@@ -382,12 +380,12 @@ def CG(x, y, layer_width, batch_size, learn_rate, iterations, initial, random_se
             beta = np.dot((gradient_vector-old_grad),gradient_vector)/(np.dot(old_grad,old_grad)+10**-10)
             rho = -gradient_vector+beta*rho
             step = [0.0] # Perform line search to find step size
-            ret = minimize(fun= objective, x0= step, args=(weight_vector, rho, layer_width, x_batch[n], y_batch[n]), bounds = [(0, 50)])
+            ret = minimize(fun= objective, x0= step, args=(weight_vector, rho, layer_width, x_batch[n], y_batch[n]), bounds = [(0, 100)])
             step = ret['x'] 
             # Update parameters
             weight_vector += rho*step[0]
             weights, biases = vector_to_matrix(x, layer_width, weight_vector)
-            batch_gradient_list[n] = linalg.norm(gradient_vector)**2
+            batch_gradient_list[n] += linalg.norm(gradient_vector)**2/reps
         # measure loss
         n +=1
         if n == N_batches: 
@@ -419,7 +417,7 @@ def L_BFGS(x, y, layer_width, batch_size, learn_rate, iterations, initial, rando
     """ Limited-memory Broyden–Fletcher–Goldfarb–Shanno. """
     x_batch, y_batch, N_batches = make_batch(x, y, batch_size)
     N_layers = len(layer_width)
-    reps = 20
+    reps = 1
     iterations -= iterations%reps
     loss_list = np.zeros(iterations//reps) # list for plotting loss over iterations
     time_list = np.zeros(iterations//reps)
